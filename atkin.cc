@@ -10,19 +10,39 @@ std::vector<int64_t> first_primes = {2, 3, 5};
  switches 1 to 0 for all the integers within range that are multiple of
  square of some prime number
 */
-std::vector<int64_t> AtkinSieve::getSquareFree(bitfields & ranges, int64_t limit)
+void AtkinSieve::removeSquareFreeAndCount(bitfields & ranges, int64_t limit, std::vector<int64_t> const & count_requests)
 {
+    assert(count_requests.size() > 0);
+    
     // atkin just omitts 2, 3, 5 primes
-    std::vector<int64_t> primes{firstPrimes};
-    for (int64_t k = 0, n = 1, n2 = 1; n <= limit; ++k) {
+    uint32_t req_it = 0;
+    int64_t request = count_requests[req_it];
+    while (req_it < count_requests.size() && request <= 5) {
+        primesCount[req_it] = firstCounts[request];
+        if (count_requests.size() > ++req_it) {
+            request = count_requests[req_it];
+        }
+    }
+    int64_t count = 3;
+    int64_t const overflow = 3037000499L; // floor(sqrt(2^63-1))
+    for (int64_t k = 0, n = 1, n2 = 1; n <= limit && count_requests.size() > req_it; ++k) {
         for (auto r : z60) { 
             n = 60 * k + r;
             n2 = n * n;
             if (ranges[r][k]) {
-                primes.push_back(n);
-                if (n2 <= limit) {
+                ++count;
+                if (n >= request) {
+                    primesCount[req_it] = count - (n > request);
+                    if (count_requests.size() > ++req_it) {
+                        request = count_requests[req_it];
+                    }
+                    else {
+                        break;
+                    }
+                }
+                if (n <= overflow && n2 <= limit) {
                     // eliminate squares
-                    for (int64_t j = 0, l = 1, n2l = n2; n2l <= limit; ++j) {
+                    for (int64_t j = 0, l = 1, n2l = n2; n <= overflow && l <= overflow && n2l <= limit; ++j) {
                         for (auto r : z60) {
                             l = 60 * j + r;
                             n2l = n2 * l;
@@ -39,14 +59,18 @@ std::vector<int64_t> AtkinSieve::getSquareFree(bitfields & ranges, int64_t limit
             }
         }
     }
-    return primes;
+    if (req_it < primesCount.size()) {
+        primesCount[req_it] = -1;
+    }
 }
 
 
-std::vector<int64_t> const AtkinSieve::firstPrimes{2, 3, 5};
+// answer to 0, 1, 2, 3, 4, 5 requests
+std::vector<int64_t> const AtkinSieve::firstCounts = {0, 0, 1, 2, 2, 3};
 
 
-AtkinSieve::AtkinSieve(int64_t limit)
+AtkinSieve::AtkinSieve(int64_t limit, std::vector<int64_t> const & count_requests) 
+    : primesCount(count_requests.size())
 {
     bitfields ranges{60};
     // step 3.1
@@ -58,11 +82,11 @@ AtkinSieve::AtkinSieve(int64_t limit)
     t1.join();
     t2.join();
     t3.join();
-    primes = getSquareFree(ranges, limit);
+    removeSquareFreeAndCount(ranges, limit, count_requests);
 }
 
 
-std::vector<int64_t> const & AtkinSieve::getPrimes() const
+std::vector<int64_t> const & AtkinSieve::getPrimesCount() const
 {
-    return primes;
+    return primesCount;
 }

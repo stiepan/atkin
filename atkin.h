@@ -51,17 +51,17 @@ class AtkinSieve
 {
 
 private:
-    std::vector<int64_t> primes;
-    std::vector<int64_t> getSquareFree(bitfields &, int64_t);
+    static std::vector<int64_t> const firstCounts;
+    std::vector<int64_t> primesCount;
+    void removeSquareFreeAndCount(bitfields &, int64_t, std::vector<int64_t> const &);
 
 public:
 
-    static std::vector<int64_t> const firstPrimes;
     /* given the upper limit for the sieve returns bitfield for 
      each number in range with 1 iff the number is prime
     */
-    AtkinSieve(int64_t limit);
-    std::vector<int64_t> const & getPrimes() const;
+    AtkinSieve(int64_t limit, std::vector<int64_t> const &);
+    std::vector<int64_t> const & getPrimesCount() const;
 };
 
 #endif /* ATKIN_H_ */

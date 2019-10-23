@@ -16,15 +16,18 @@ int main()
     int64_t limit, n;
     std::cin >> limit;
     std::cin >> n;
-    auto sieve = AtkinSieve(limit);
-    auto primes = sieve.getPrimes();
-    auto p_begin = primes.begin();
-    auto p_end = primes.end();
+    std::vector<int64_t> requests(n);
+    if (n < 1) {
+        return 0;
+    }
     for (int line = 0; line < n; ++line) {
-        int64_t p;
-        std::cin >> p;
-        auto next = upper_bound(p_begin, p_end, p);
-        std::cout << next - p_begin << std::endl;
+        std::cin >> requests[line];
+    }
+    std::sort(requests.begin(), requests.end());
+    auto sieve = AtkinSieve(limit, requests);
+    auto primesCount = sieve.getPrimesCount();
+    for (int line = 0; line < n; ++line) {
+        std::cout << primesCount[line] << std::endl;
     }
     return 0;
 }
