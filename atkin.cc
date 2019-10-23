@@ -31,14 +31,16 @@ void AtkinSieve::removeSquareFreeAndCount(bitfields & ranges, int64_t limit, std
             n2 = n * n;
             if (ranges[r][k]) {
                 ++count;
-                if (n >= request) {
+                bool pending_requests = true;
+                while (n >= request && pending_requests) {
                     primesCount[req_it] = count - (n > request);
-                    if (count_requests.size() > ++req_it) {
+                    pending_requests = (count_requests.size() > ++req_it);
+                    if (pending_requests) {
                         request = count_requests[req_it];
                     }
-                    else {
-                        break;
-                    }
+                }
+                if (!pending_requests) {
+                    break;
                 }
                 if (n <= overflow && n2 <= limit) {
                     // eliminate squares
@@ -59,8 +61,8 @@ void AtkinSieve::removeSquareFreeAndCount(bitfields & ranges, int64_t limit, std
             }
         }
     }
-    if (req_it < primesCount.size()) {
-        primesCount[req_it] = -1;
+    while (req_it < primesCount.size()) {
+        primesCount[req_it++] = count;
     }
 }
 
